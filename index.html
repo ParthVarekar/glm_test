@@ -28,7 +28,17 @@
   .video-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#000}
   .video-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0.7) 0%,rgba(10,10,10,0.4) 40%,rgba(10,10,10,0.85) 100%);pointer-events:none;z-index:2}
   /* Native HTML5 Video styling to cover screen */
-  #heroVideo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;pointer-events:none;object-fit:cover}
+  #heroVideo {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    pointer-events: none;
+  }
 
   /* === Atmospheric overlays === */
   .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.75) 100%)}
@@ -193,6 +203,10 @@
     .hero-meta{gap:2rem;flex-wrap:wrap}
     .hero-meta-item:not(:last-child)::after{display:none}
     .hero-eyebrow::before,.hero-eyebrow::after{width:20px;margin:0 0.75rem}
+    #heroVideo {
+      object-fit: contain;
+      background-color: #0a0805;
+    }
   }
 </style>
 </head>
