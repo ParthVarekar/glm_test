@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cristiano Ronaldo — A Living Legend</title>
+<link rel="icon" href="data:,"> <!-- Prevents favicon 404 errors -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a0a;
+    --gold:#d4af37;
+    --gold-light:#f5d67e;
+    --gold-deep:#9a7d22;
+    --fg:#f4f1e8;
+    --fg-dim:rgba(244,241,232,0.55);
+    --fg-faint:rgba(244,241,232,0.25);
+    --line:rgba(212,175,55,0.18);
+  }
+  html,body{background:var(--bg);color:var(--fg);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:0}
+  ::selection{background:var(--gold);color:#0a0a0a}
+
+  /* === Video Background === */
+  .video-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#000}
+  .video-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0.7) 0%,rgba(10,10,10,0.4) 40%,rgba(10,10,10,0.85) 100%);pointer-events:none;z-index:2}
+  /* Native HTML5 Video styling to cover screen */
+  #heroVideo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;pointer-events:none;object-fit:cover}
+
+  /* === Atmospheric overlays === */
+  .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.75) 100%)}
+  .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
+  .particle-canvas{position:fixed;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen}
+
+  /* === Top Bar === */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:30;padding:1.5rem 2.5rem;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none;background:linear-gradient(180deg,rgba(10,10,10,0.75),transparent)}
+  .brand{display:flex;align-items:center;gap:0.75rem;pointer-events:auto}
+  .brand-bar{width:2px;height:32px;background:linear-gradient(to bottom,var(--gold),transparent)}
+  .brand-text{font-family:'Playfair Display',serif;font-weight:900;font-size:1.15rem;letter-spacing:0.18em;line-height:1}
+  .brand-text small{display:block;font-family:'Space Grotesk',sans-serif;font-weight:400;font-size:0.55rem;letter-spacing:0.35em;color:var(--gold);margin-top:4px}
+  .chapter-display{text-align:center;pointer-events:none;padding-top:0.25rem}
+  .chapter-display-label{font-size:0.5rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:0.4rem;font-weight:500}
+  .chapter-display-name{font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;letter-spacing:0.04em;color:var(--fg);transition:opacity 0.5s}
+  .progress-readout{text-align:right;pointer-events:auto}
+  .progress-pct{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;color:var(--gold);line-height:1;font-variant-numeric:tabular-nums}
+  .progress-year{font-size:0.58rem;letter-spacing:0.3em;color:var(--fg-dim);margin-top:0.4rem;text-transform:uppercase}
+
+  /* === Side decorations === */
+  .vertical-name{position:fixed;right:1.75rem;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:center;z-index:30;font-family:'Space Grotesk',sans-serif;font-size:0.6rem;letter-spacing:0.85em;color:var(--fg-faint);text-transform:uppercase;white-space:nowrap;pointer-events:none}
+  .squad-number{position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);z-index:5;font-family:'Playfair Display',serif;font-size:clamp(8rem,18vw,16rem);font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:1px rgba(212,175,55,0.12);pointer-events:none;user-select:none;font-style:italic}
+
+  /* === Bottom Timeline === */
+  .timeline{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:1.5rem 2.5rem 1.75rem;background:linear-gradient(0deg,rgba(10,10,10,0.9),transparent);pointer-events:none}
+  .timeline-track{position:relative;height:1px;background:rgba(244,241,232,0.12);pointer-events:auto;cursor:pointer}
+  .timeline-fill{position:absolute;top:0;left:0;height:100%;background:var(--gold);width:0;transition:width 0.05s linear}
+  .timeline-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 16px var(--gold)}
+  .timeline-chapters{display:flex;justify-content:space-between;margin-top:1rem;pointer-events:auto}
+  .timeline-chapter{flex:1;text-align:center;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--fg-faint);cursor:pointer;transition:color 0.4s;position:relative;padding-top:0.65rem;font-weight:500}
+  .timeline-chapter::before{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:1px;height:6px;background:rgba(244,241,232,0.2);transition:all 0.4s}
+  .timeline-chapter:hover{color:var(--fg-dim)}
+  .timeline-chapter.active{color:var(--gold)}
+  .timeline-chapter.active::before{background:var(--gold);height:10px;top:-12px}
+
+  /* === Start Overlay === */
+  .start-overlay{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at center,rgba(25,18,5,0.96) 0%,rgba(0,0,0,0.99) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:2rem;transition:opacity 1s,visibility 1s}
+  .start-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+  .start-eyebrow{font-size:0.65rem;letter-spacing:0.55em;color:var(--gold);text-transform:uppercase;font-weight:500}
+  .start-eyebrow::before,.start-eyebrow::after{content:'';display:inline-block;width:30px;height:1px;background:var(--gold);vertical-align:middle;margin:0 1.25rem;opacity:0.5}
+  .start-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(3.5rem,11vw,8rem);line-height:0.92;text-align:center;letter-spacing:-0.025em;background:linear-gradient(180deg,#f4f1e8 0%,var(--gold) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .start-title em{font-style:italic;font-weight:400;display:block}
+  .start-sub{font-size:0.85rem;color:var(--fg-dim);text-align:center;max-width:420px;line-height:1.8;letter-spacing:0.04em}
+  .start-btn{margin-top:1rem;padding:1.1rem 2.75rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Space Grotesk',sans-serif;font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;cursor:pointer;transition:all 0.4s;position:relative;overflow:hidden;font-weight:500}
+  .start-btn::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateX(-101%);transition:transform 0.4s;z-index:-1}
+  .start-btn:hover{color:#0a0a0a}
+  .start-btn:hover::before{transform:translateX(0)}
+  .start-loading{font-size:0.62rem;color:var(--fg-faint);letter-spacing:0.25em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;min-height:1rem}
+  .start-spinner{width:10px;height:10px;border:1.5px solid rgba(212,175,55,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* === Content === */
+  .scroll-content{position:relative;z-index:10}
+  .section{min-height:100vh;padding:7rem 2.5rem 9rem;display:flex;align-items:center;position:relative}
+
+  /* Hero */
+  .hero-section{flex-direction:column;justify-content:center;text-align:center;padding:0 2.5rem}
+  .hero-eyebrow{font-size:0.65rem;letter-spacing:0.55em;color:var(--gold);text-transform:uppercase;margin-bottom:2.5rem;opacity:0;transform:translateY(20px);transition:opacity 0.9s,transform 0.9s;font-weight:500}
+  .hero-section.in-view .hero-eyebrow{opacity:1;transform:translateY(0)}
+  .hero-eyebrow::before,.hero-eyebrow::after{content:'';display:inline-block;width:40px;height:1px;background:var(--gold);vertical-align:middle;margin:0 1.5rem;opacity:0.6}
+  .hero-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(3.5rem,14vw,12rem);line-height:0.86;letter-spacing:-0.035em;margin-bottom:1.75rem;opacity:0;transform:translateY(50px);transition:opacity 1.2s 0.1s,transform 1.2s 0.1s}
+  .hero-title em{font-style:italic;font-weight:400;color:var(--gold);display:block}
+  .hero-section.in-view .hero-title{opacity:1;transform:translateY(0)}
+  .hero-sub{font-size:clamp(0.9rem,1.3vw,1.05rem);color:var(--fg-dim);max-width:580px;line-height:1.8;margin:0 auto 3rem;font-weight:300;opacity:0;transform:translateY(20px);transition:opacity 1.1s 0.35s,transform 1.1s 0.35s}
+  .hero-section.in-view .hero-sub{opacity:1;transform:translateY(0)}
+  .hero-meta{display:flex;gap:4rem;justify-content:center;opacity:0;transform:translateY(20px);transition:opacity 1.1s 0.55s,transform 1.1s 0.55s}
+  .hero-section.in-view .hero-meta{opacity:1;transform:translateY(0)}
+  .hero-meta-item{text-align:center;position:relative}
+  .hero-meta-item:not(:last-child)::after{content:'';position:absolute;right:-2rem;top:50%;transform:translateY(-50%);width:1px;height:30px;background:var(--line)}
+  .hero-meta-value{font-family:'Playfair Display',serif;font-size:1.75rem;color:var(--gold);font-weight:700;line-height:1}
+  .hero-meta-label{font-size:0.55rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--fg-faint);margin-top:0.5rem}
+  .scroll-cue{position:absolute;bottom:5.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.75rem;color:var(--fg-faint);font-size:0.55rem;letter-spacing:0.4em;text-transform:uppercase;transition:opacity 0.6s}
+  .scroll-cue-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollLine 2s ease-in-out infinite;transform-origin:top}
+  @keyframes scrollLine{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.3);transform-origin:bottom}}
+
+  /* Chapter sections */
+  .chapter-section{display:grid;grid-template-columns:1fr 1.5fr;gap:5rem;max-width:1400px;margin:0 auto;width:100%}
+  .chapter-left{border-left:1px solid var(--line);padding-left:2.5rem;position:relative;opacity:0;transform:translateX(-30px);transition:opacity 1s,transform 1s}
+  .chapter-section.in-view .chapter-left{opacity:1;transform:translateX(0)}
+  .chapter-left::before{content:'';position:absolute;left:-3px;top:0;width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+  .chapter-year{font-family:'Playfair Display',serif;font-size:clamp(3.5rem,7.5vw,6.5rem);font-weight:900;line-height:1;color:var(--gold);margin-bottom:0.5rem;letter-spacing:-0.025em;font-style:italic}
+  .chapter-period{font-size:0.6rem;letter-spacing:0.3em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:2.5rem;font-weight:500}
+  .chapter-team{font-family:'Playfair Display',serif;font-style:italic;font-size:1.5rem;color:var(--fg);margin-bottom:0.5rem;font-weight:400}
+  .chapter-location{font-size:0.7rem;letter-spacing:0.22em;color:var(--fg-dim);text-transform:uppercase}
+  .chapter-right{opacity:0;transform:translateX(30px);transition:opacity 1s 0.15s,transform 1s 0.15s}
+  .chapter-section.in-view .chapter-right{opacity:1;transform:translateX(0)}
+  .chapter-label{font-size:0.6rem;letter-spacing:0.4em;color:var(--gold);text-transform:uppercase;margin-bottom:1.5rem;font-weight:500;display:flex;align-items:center;gap:0.75rem}
+  .chapter-label::before{content:'';width:30px;height:1px;background:var(--gold)}
+  .chapter-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4.2vw,3.5rem);font-weight:700;line-height:1.08;margin-bottom:1.75rem;letter-spacing:-0.015em}
+  .chapter-title em{font-style:italic;font-weight:400;color:var(--gold-light)}
+  .chapter-body{font-size:0.95rem;line-height:1.85;color:var(--fg-dim);max-width:560px;margin-bottom:2.75rem;font-weight:300}
+  .chapter-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:560px;padding-top:2rem;border-top:1px solid var(--line)}
+  .stat-block{display:flex;flex-direction:column}
+  .stat-value{font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:700;color:var(--fg);line-height:1;margin-bottom:0.5rem;font-variant-numeric:tabular-nums}
+  .stat-value-suffix{color:var(--gold);font-size:1.4rem;font-style:italic}
+  .stat-label{font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--fg-faint);line-height:1.5;font-weight:500}
+
+  /* Quote */
+  .quote-section{flex-direction:column;justify-content:center;text-align:center;padding:0 2.5rem}
+  .quote-mark{font-family:'Playfair Display',serif;font-size:9rem;color:var(--gold);line-height:0.5;margin-bottom:1.5rem;opacity:0;transition:opacity 1.2s}
+  .quote-section.in-view .quote-mark{opacity:0.5}
+  .quote-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1.5rem,4vw,3rem);font-weight:400;line-height:1.35;max-width:950px;margin:0 auto 2.5rem;opacity:0;transform:translateY(30px);transition:opacity 1.3s 0.2s,transform 1.3s 0.2s}
+  .quote-section.in-view .quote-text{opacity:1;transform:translateY(0)}
+  .quote-author{font-size:0.7rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);opacity:0;transition:opacity 1s 0.6s;font-weight:500}
+  .quote-section.in-view .quote-author{opacity:1}
+  .quote-author::before{content:'';display:inline-block;width:30px;height:1px;background:var(--gold);vertical-align:middle;margin-right:1rem;opacity:0.6}
+
+  /* Numbers */
+  .numbers-section{flex-direction:column;justify-content:center;padding:7rem 2.5rem}
+  .numbers-eyebrow{font-size:0.65rem;letter-spacing:0.55em;color:var(--gold);text-transform:uppercase;margin-bottom:1.5rem;text-align:center;opacity:0;transition:opacity 1s;font-weight:500}
+  .numbers-section.in-view .numbers-eyebrow{opacity:1}
+  .numbers-title{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6.5vw,5.5rem);text-align:center;line-height:1;margin-bottom:4rem;font-weight:900;opacity:0;transform:translateY(30px);transition:opacity 1.2s 0.15s,transform 1.2s 0.15s;letter-spacing:-0.02em}
+  .numbers-title em{font-style:italic;color:var(--gold);font-weight:400}
+  .numbers-section.in-view .numbers-title{opacity:1;transform:translateY(0)}
+  .numbers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;max-width:1200px;margin:0 auto}
+  .number-cell{text-align:center;padding:2.25rem 1rem;border:1px solid var(--line);background:rgba(0,0,0,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transform:translateY(30px);transition:opacity 0.9s,transform 0.9s;position:relative;overflow:hidden}
+  .number-cell::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.4s}
+  .number-cell:hover::before{opacity:1}
+  .number-cell:hover{border-color:rgba(212,175,55,0.4)}
+  .numbers-section.in-view .number-cell{opacity:1;transform:translateY(0)}
+  .numbers-section.in-view .number-cell:nth-child(1){transition-delay:0.2s}
+  .numbers-section.in-view .number-cell:nth-child(2){transition-delay:0.3s}
+  .numbers-section.in-view .number-cell:nth-child(3){transition-delay:0.4s}
+  .numbers-section.in-view .number-cell:nth-child(4){transition-delay:0.5s}
+  .numbers-section.in-view .number-cell:nth-child(5){transition-delay:0.6s}
+  .numbers-section.in-view .number-cell:nth-child(6){transition-delay:0.7s}
+  .numbers-section.in-view .number-cell:nth-child(7){transition-delay:0.8s}
+  .numbers-section.in-view .number-cell:nth-child(8){transition-delay:0.9s}
+  .number-value{font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:900;color:var(--gold);line-height:1;margin-bottom:0.6rem;font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+  .number-value-suffix{font-size:2rem;font-style:italic}
+  .number-label{font-size:0.58rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--fg-dim);line-height:1.6;font-weight:500}
+  .numbers-quote{text-align:center;margin-top:4rem;font-family:'Playfair Display',serif;font-style:italic;font-size:1.15rem;color:var(--fg-dim);max-width:700px;margin-left:auto;margin-right:auto;opacity:0;transition:opacity 1.2s 1.1s;line-height:1.7}
+  .numbers-section.in-view .numbers-quote{opacity:1}
+
+  /* Closing */
+  .closing-section{flex-direction:column;justify-content:center;text-align:center;padding:0 2.5rem}
+  .closing-eyebrow{font-size:0.65rem;letter-spacing:0.55em;color:var(--gold);text-transform:uppercase;margin-bottom:2rem;font-weight:500}
+  .closing-title{font-family:'Playfair Display',serif;font-size:clamp(4rem,15vw,12rem);font-weight:900;line-height:0.9;margin-bottom:2.5rem;background:linear-gradient(180deg,#f4f1e8,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-0.04em;font-style:italic}
+  .closing-body{font-size:1rem;color:var(--fg-dim);max-width:540px;margin:0 auto 3rem;line-height:1.85;font-weight:300}
+  .closing-btn{display:inline-block;padding:1.1rem 2.75rem;border:1px solid var(--gold);color:var(--gold);font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;cursor:pointer;background:transparent;transition:all 0.4s;font-family:'Space Grotesk',sans-serif;font-weight:500;position:relative;overflow:hidden}
+  .closing-btn::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateX(-101%);transition:transform 0.4s;z-index:-1}
+  .closing-btn:hover{color:#0a0a0a}
+  .closing-btn:hover::before{transform:translateX(0)}
+
+  /* Responsive */
+  @media(max-width:900px){
+    .topbar{padding:1rem 1.25rem}
+    .brand-text{font-size:1rem}
+    .chapter-display{display:none}
+    .progress-pct{font-size:1.3rem}
+    .squad-number{font-size:7rem;left:0.5rem;opacity:0.5}
+    .vertical-name{display:none}
+    .section{padding:5rem 1.25rem 7rem}
+    .chapter-section{grid-template-columns:1fr;gap:2.5rem}
+    .chapter-left{padding-left:1.5rem}
+    .chapter-stats{grid-template-columns:repeat(3,1fr);gap:1rem}
+    .stat-value{font-size:1.5rem}
+    .timeline{padding:1rem 1rem 1.25rem}
+    .timeline-chapter{font-size:0.42rem;letter-spacing:0.1em}
+    .numbers-grid{grid-template-columns:repeat(2,1fr)}
+    .number-value{font-size:2.5rem}
+    .hero-meta{gap:2rem;flex-wrap:wrap}
+    .hero-meta-item:not(:last-child)::after{display:none}
+    .hero-eyebrow::before,.hero-eyebrow::after{width:20px;margin:0 0.75rem}
+  }
+</style>
+</head>
+<body>
+
+  <div class="video-bg">
+    <video id="heroVideo" muted playsinline preload="auto"></video>
+  </div>
+  <div class="vignette"></div>
+  <canvas class="particle-canvas" id="particleCanvas"></canvas>
+  <div class="grain"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-bar"></div>
+      <div class="brand-text">CR7<small>EST. 1985</small></div>
+    </div>
+    <div class="chapter-display">
+      <div class="chapter-display-label">Now Showing</div>
+      <div class="chapter-display-name" id="currentChapter">Introduction</div>
+    </div>
+    <div class="progress-readout">
+      <div class="progress-pct" id="progressPct">00%</div>
+      <div class="progress-year" id="progressYear">1985</div>
+    </div>
+  </header>
+
+  <div class="vertical-name">Cristiano Ronaldo · dos Santos · Aveiro</div>
+  <div class="squad-number">07</div>
+
+  <div class="start-overlay" id="startOverlay">
+    <div class="start-eyebrow">A Cinematic Portfolio</div>
+    <h1 class="start-title">Cristiano<em>Ronaldo</em></h1>
+    <p class="start-sub">Twenty-two years. Five Ballons d'Or. Over nine hundred goals. One impossible journey. Scroll to relive the legend, frame by frame.</p>
+    <button class="start-btn" id="startBtn">Enter the Story</button>
+    <div class="start-loading" id="startLoading">
+      <div class="start-spinner"></div>
+      <span id="startLoadingText">Preparing the journey</span>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-track" id="timelineTrack">
+      <div class="timeline-fill" id="timelineFill"></div>
+    </div>
+    <div class="timeline-chapters" id="timelineChapters"></div>
+  </div>
+
+  <main class="scroll-content" id="scrollContent">
+
+    <section class="section hero-section" data-index="0" data-chapter="Introduction" data-year="The Beginning">
+      <div class="hero-eyebrow">The Definitive Story</div>
+      <h1 class="hero-title">Cristiano<em>Ronaldo</em></h1>
+      <p class="hero-sub">From a small island in the Atlantic to the summit of world football — this is the cinematic journey of a boy who decided the world would know his name.</p>
+      <div class="hero-meta">
+        <div class="hero-meta-item"><div class="hero-meta-value">22</div><div class="hero-meta-label">Years Pro</div></div>
+        <div class="hero-meta-item"><div class="hero-meta-value">5</div><div class="hero-meta-label">Ballons d'Or</div></div>
+        <div class="hero-meta-item"><div class="hero-meta-value">900+</div><div class="hero-meta-label">Career Goals</div></div>
+      </div>
+      <div class="scroll-cue" id="scrollCue">
+        <span>Scroll to begin</span>
+        <div class="scroll-cue-line"></div>
+      </div>
+    </section>
+
+    <section class="section chapter-section" data-index="1" data-chapter="Madeira" data-year="1985 — 2003">
+      <div class="chapter-left">
+        <div class="chapter-year">1985</div>
+        <div class="chapter-period">1985 — 2003</div>
+        <div class="chapter-team">Sporting CP</div>
+        <div class="chapter-location">Funchal · Madeira · Portugal</div>
+      </div>
+      <div class="chapter-right">
+        <div class="chapter-label">Chapter I — Origins</div>
+        <h2 class="chapter-title">A boy from <em>the island</em>, with the world in his feet.</h2>
+        <p class="chapter-body">Born on the 5th of February, 1985, in the parish of Santo António, Cristiano Ronaldo dos Santos Aveiro was named after Ronald Reagan — his father's favorite actor. By twelve, he had left his family in Madeira for Lisbon. By sixteen, Sporting's coaches had to pull him out of training because he was outplaying the first team. By seventeen, he was debuting for them. The continent was already watching.</p>
+        <div class="chapter-stats">
+          <div class="stat-block"><div class="stat-value">5</div><div class="stat-label">First-team<br>Appearances</div></div>
+          <div class="stat-block"><div class="stat-value">17<span class="stat-value-suffix"> yrs</span></div><div class="stat-label">Debut<br>Age</div></div>
+          <div class="stat-block"><div class="stat-value">€19<span class="stat-value-suffix">M</span></div><div class="stat-label">Transfer to<br>Man United</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section chapter-section" data-index="2" data-chapter="Manchester" data-year="2003 — 2009">
+      <div class="chapter-left">
+        <div class="chapter-year">2003</div>
+        <div class="chapter-period">2003 — 2009</div>
+        <div class="chapter-team">Manchester United</div>
+        <div class="chapter-location">Old Trafford · England</div>
+      </div>
+      <div class="chapter-right">
+        <div class="chapter-label">Chapter II — The Theatre of Dreams</div>
+        <h2 class="chapter-title">Six years that <em>forged a myth.</em></h2>
+        <p class="chapter-body">Sir Alex Ferguson paid €19 million for a skinny winger after a single friendly. "He's the most exciting young player I've ever seen," Ferguson said. In Manchester, the wiry teenager became a force of nature — three Premier League titles, a Champions League crown won in the Moscow rain, and the first Ballon d'Or of his career in 2008. The boy was now the best player in the world.</p>
+        <div class="chapter-stats">
+          <div class="stat-block"><div class="stat-value">118</div><div class="stat-label">Goals in<br>292 matches</div></div>
+          <div class="stat-block"><div class="stat-value">3<span class="stat-value-suffix">×</span></div><div class="stat-label">Premier<br>League titles</div></div>
+          <div class="stat-block"><div class="stat-value">1<span class="stat-value-suffix">st</span></div><div class="stat-label">Ballon d'Or<br>2008</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section chapter-section" data-index="3" data-chapter="Madrid" data-year="2009 — 2018">
+      <div class="chapter-left">
+        <div class="chapter-year">2009</div>
+        <div class="chapter-period">2009 — 2018</div>
+        <div class="chapter-team">Real Madrid</div>
+        <div class="chapter-location">Santiago Bernabéu · Spain</div>
+      </div>
+      <div class="chapter-right">
+        <div class="chapter-label">Chapter III — The Galáctico</div>
+        <h2 class="chapter-title">Nine years. Four Champions Leagues. <em>An empire.</em></h2>
+        <p class="chapter-body">For a world-record €94 million, he came to the Bernabéu and rewrote every record book in white. Four Champions League titles in five seasons — including the impossible three-peat from 2016 to 2018. He became Real Madrid's all-time leading scorer with 450 goals in 438 matches, a ratio that defies arithmetic. Madrid had found their king. Football had found its measuring stick.</p>
+        <div class="chapter-stats">
+          <div class="stat-block"><div class="stat-value">450</div><div class="stat-label">Goals in<br>438 matches</div></div>
+          <div class="stat-block"><div class="stat-value">4<span class="stat-value-suffix">×</span></div><div class="stat-label">Champions<br>League titles</div></div>
+          <div class="stat-block"><div class="stat-value">4<span class="stat-value-suffix">×</span></div><div class="stat-label">Ballons<br>d'Or</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section chapter-section" data-index="4" data-chapter="Turin" data-year="2018 — 2022">
+      <div class="chapter-left">
+        <div class="chapter-year">2018</div>
+        <div class="chapter-period">2018 — 2022</div>
+        <div class="chapter-team">Juventus · Man Utd</div>
+        <div class="chapter-location">Turin · Manchester</div>
+      </div>
+      <div class="chapter-right">
+        <div class="chapter-label">Chapter IV — New Kingdoms</div>
+        <h2 class="chapter-title">Italy. A homecoming. <em>And still, the hunger.</em></h2>
+        <p class="chapter-body">In Turin he conquered Italy — two Serie A titles, two Italian Super Cups, the Capocannoniere. Then came the return every Red Devil had prayed for: Old Trafford, 2021. The homecoming ended sooner than anyone wished, but the goals never stopped. By the time he left Europe, he had scored more goals than any man in the recorded history of the sport.</p>
+        <div class="chapter-stats">
+          <div class="stat-block"><div class="stat-value">101</div><div class="stat-label">Goals for<br>Juventus</div></div>
+          <div class="stat-block"><div class="stat-value">2<span class="stat-value-suffix">×</span></div><div class="stat-label">Serie A<br>titles</div></div>
+          <div class="stat-block"><div class="stat-value">24</div><div class="stat-label">Goals on<br>Man Utd return</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section quote-section" data-index="5" data-chapter="Portugal" data-year="2003 — Present">
+      <div class="quote-mark">"</div>
+      <blockquote class="quote-text">For Portugal, I would run until my legs stopped working. To lift the trophy in Paris — that was the moment my life's dream wore the colors of my country.</blockquote>
+      <div class="quote-author">On winning Euro 2016</div>
+    </section>
+
+    <section class="section numbers-section" data-index="6" data-chapter="Numbers" data-year="The Record">
+      <div class="numbers-eyebrow">The Cold, Beautiful Numbers</div>
+      <h2 class="numbers-title">A Career in <em>Figures</em></h2>
+      <div class="numbers-grid">
+        <div class="number-cell"><div class="number-value" data-target="900" data-suffix="+">0</div><div class="number-label">Career<br>Goals</div></div>
+        <div class="number-cell"><div class="number-value" data-target="5">0</div><div class="number-label">Ballons<br>d'Or</div></div>
+        <div class="number-cell"><div class="number-value" data-target="4">0</div><div class="number-label">European<br>Golden Shoes</div></div>
+        <div class="number-cell"><div class="number-value" data-target="5">0</div><div class="number-label">Champions<br>League Titles</div></div>
+        <div class="number-cell"><div class="number-value" data-target="128" data-suffix="+">0</div><div class="number-label">International<br>Goals</div></div>
+        <div class="number-cell"><div class="number-value" data-target="140" data-suffix="+">0</div><div class="number-label">Champions<br>League Goals</div></div>
+        <div class="number-cell"><div class="number-value" data-target="35">0</div><div class="number-label">Career<br>Trophies</div></div>
+        <div class="number-cell"><div class="number-value" data-target="11">0</div><div class="number-label">Times Top<br>Scorer Worldwide</div></div>
+      </div>
+      <p class="numbers-quote">"Talent without work is nothing." — and the numbers prove he never stopped.</p>
+    </section>
+
+    <section class="section closing-section" data-index="7" data-chapter="Legacy" data-year="Present">
+      <div class="closing-eyebrow">The Legend Continues</div>
+      <h2 class="closing-title">Siuuu.</h2>
+      <p class="closing-body">From Madeira to Madrid, from Turin to Riyadh, the journey of Cristiano Ronaldo is not a story of talent alone — but of obsession, discipline, and an unshakable belief that the next goal is always the most important. Records were never the goal. They were simply the byproduct of a man who refused to stop.</p>
+      <button class="closing-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Replay the Journey</button>
+    </section>
+
+  </main>
+
+  <script>
+  // === Config ===
+  var VIDEO_URL = 'ronaldo.mp4';
+  var SECTION_COUNT = 8;
+  var CONFIG = {
+    SEEK_THRESHOLD: 0.15
+  };
+
+  // === DOM ===
+  var video = document.getElementById('heroVideo');
+  var startOverlay = document.getElementById('startOverlay');
+  var startBtn = document.getElementById('startBtn');
+  var startLoadingText = document.getElementById('startLoadingText');
+  var progressFill = document.getElementById('timelineFill');
+  var progressPct = document.getElementById('progressPct');
+  var progressYear = document.getElementById('progressYear');
+  var currentChapter = document.getElementById('currentChapter');
+  var timelineChapters = document.getElementById('timelineChapters');
+  var timelineTrack = document.getElementById('timelineTrack');
+  var sections = document.querySelectorAll('.section');
+  var scrollCue = document.getElementById('scrollCue');
+
+  // === State ===
+  var videoReady = false;
+  var videoDuration = 0;
+  var started = false;
+  var scrollProg = 0;
+  var smoothProg = 0;
+  var isSeeking = false;
+
+  // === Video Setup ===
+  video.src = VIDEO_URL;
+  video.load();
+
+  video.addEventListener('loadedmetadata', function() {
+    videoDuration = video.duration;
+    startLoadingText.textContent = 'Ready — press enter';
+    // Try to play to force buffer, immediately pause to allow scroll control
+    video.play().then(function() {
+      video.pause();
+      videoReady = true;
+    }).catch(function(e) {
+      // Autoplay blocked, will need user click
+      startLoadingText.textContent = 'Tap to begin';
+    });
+  });
+
+  video.addEventListener('error', function() {
+    startLoadingText.textContent = 'Video unavailable — explore anyway';
+  });
+
+  video.addEventListener('seeking', function() { isSeeking = true; });
+  video.addEventListener('seeked', function() { isSeeking = false; });
+
+  // === Build timeline chapter markers ===
+  sections.forEach(function(sec, i){
+    var el = document.createElement('div');
+    el.className = 'timeline-chapter' + (i===0?' active':'');
+    el.textContent = sec.dataset.chapter;
+    el.dataset.index = i;
+    el.addEventListener('click', function(){
+      window.scrollTo({top: i * window.innerHeight, behavior:'smooth'});
+    });
+    timelineChapters.appendChild(el);
+  });
+  var chapterEls = timelineChapters.querySelectorAll('.timeline-chapter');
+
+  // === Start button ===
+  startBtn.addEventListener('click', function(){
+    if (started) return;
+    started = true;
+    dismissOverlay();
+    
+    // Force play to unlock buffer
+    if (!videoReady) {
+      video.play().then(function() {
+        video.pause();
+        videoReady = true;
+      }).catch(function(e){});
+    }
+  });
+
+  function dismissOverlay() {
+    startOverlay.classList.add('hidden');
+  }
+
+  // === Scroll progress ===
+  function onScroll() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    scrollProg = Math.max(0, Math.min(1, window.scrollY / Math.max(1, max)));
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // === Section visibility observer ===
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+      }
+    });
+  }, {threshold: 0.2});
+  sections.forEach(function(s){ observer.observe(s); });
+
+  // Cache DOM elements for performance
+  var sectionCache = [];
+  document.querySelectorAll('.content-section').forEach(function(sec) {
+    sectionCache.push({
+      el: sec,
+      panel: sec.querySelector('.content-panel')
+    });
+  });
+
+  // === UI update ===
+  function updateUI(p) {
+    progressFill.style.width = (p*100) + '%';
+    progressPct.textContent = String(Math.round(p*100)).padStart(2,'0') + '%';
+
+    var idx = Math.min(SECTION_COUNT-1, Math.floor(p * SECTION_COUNT - 0.01));
+    if (p >= 0.99) idx = SECTION_COUNT - 1;
+
+    chapterEls.forEach(function(el, i){
+      if (i === idx) el.classList.add('active');
+      else el.classList.remove('active');
+    });
+
+    var sec = sections[idx];
+    if (sec) {
+      var newName = sec.dataset.chapter;
+      if (currentChapter.textContent !== newName) {
+        currentChapter.style.opacity = '0';
+        setTimeout(function(){
+          currentChapter.textContent = newName;
+          currentChapter.style.opacity = '1';
+        }, 250);
+      }
+      progressYear.textContent = sec.dataset.year;
+    }
+
+    if (scrollCue) {
+      scrollCue.style.opacity = p < 0.04 ? '1' : '0';
+    }
+
+    for (var i = 0; i < sectionCache.length; i++) {
+      var s = sectionCache[i].el;
+      var panel = sectionCache[i].panel;
+      var rect = s.getBoundingClientRect();
+      var dist = Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2);
+      if (panel) {
+        if (dist < window.innerHeight * 0.35) panel.classList.add('visible');
+        else panel.classList.remove('visible');
+      }
+    }
+  }
+
+  // === Number counter animation ===
+  var countersAnimated = new Set();
+  function animateCounter(el) {
+    if (countersAnimated.has(el)) return;
+    countersAnimated.add(el);
+    var target = parseInt(el.dataset.target);
+    var suffix = el.dataset.suffix || '';
+    var dur = 2000;
+    var startT = null;
+    function step(ts){
+      if (!startT) startT = ts;
+      var t = Math.min(1, (ts - startT)/dur);
+      var eased = 1 - Math.pow(1-t, 3);
+      var v = Math.floor(target * eased);
+      el.innerHTML = v + (suffix ? '<span class="number-value-suffix">'+suffix+'</span>' : '');
+      if (t < 1) requestAnimationFrame(step);
+      else el.innerHTML = target + (suffix ? '<span class="number-value-suffix">'+suffix+'</span>' : '');
+    }
+    requestAnimationFrame(step);
+  }
+  var numbersObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.number-value[data-target]').forEach(animateCounter);
+      }
+    });
+  }, {threshold: 0.3});
+  var numbersSection = document.querySelector('.numbers-section');
+  if (numbersSection) numbersObserver.observe(numbersSection);
+
+  // === Timeline click ===
+  timelineTrack.addEventListener('click', function(e){
+    var rect = this.getBoundingClientRect();
+    var pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    window.scrollTo({top: pct * (document.documentElement.scrollHeight - window.innerHeight), behavior:'smooth'});
+  });
+
+  // === Gold particle canvas ===
+  var pCanvas = document.getElementById('particleCanvas');
+  var pCtx = pCanvas.getContext('2d');
+  var pW, pH;
+  function resizeP(){
+    pW = pCanvas.width = window.innerWidth;
+    pH = pCanvas.height = window.innerHeight;
+  }
+  resizeP();
+  window.addEventListener('resize', function(){clearTimeout(window._prt);window._prt=setTimeout(resizeP,150);});
+
+  var particles = [];
+  var PCOUNT = window.innerWidth < 768 ? 45 : 110;
+  for (var i=0; i<PCOUNT; i++) {
+    particles.push({
+      x: Math.random()*pW,
+      y: Math.random()*pH,
+      vx: (Math.random()-0.5)*0.18,
+      vy: -Math.random()*0.4 - 0.05,
+      r: Math.random()*1.6 + 0.3,
+      a: Math.random()*0.7 + 0.2,
+      ph: Math.random()*Math.PI*2,
+      sp: Math.random()*0.5 + 0.5
+    });
+  }
+
+  function renderParticles(time){
+    pCtx.clearRect(0,0,pW,pH);
+    for (var i=0; i<particles.length; i++){
+      var p = particles[i];
+      p.x += p.vx + Math.sin(time*0.4*p.sp + p.ph)*0.15;
+      p.y += p.vy;
+      if (p.y < -10) { p.y = pH + 10; p.x = Math.random()*pW; }
+      if (p.x < -10) p.x = pW + 10;
+      if (p.x > pW + 10) p.x = -10;
+      var flicker = 0.6 + 0.4*Math.sin(time*2.5 + p.ph);
+      // Soft glow
+      var grad = pCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, Math.max(0.5, p.r*4));
+      grad.addColorStop(0, 'rgba(245,214,126,'+(p.a*flicker*0.5)+')');
+      grad.addColorStop(1, 'rgba(212,175,55,0)');
+      pCtx.fillStyle = grad;
+      pCtx.beginPath();
+      pCtx.arc(p.x, p.y, Math.max(0.5, p.r*4), 0, Math.PI*2);
+      pCtx.fill();
+      // Core
+      pCtx.beginPath();
+      pCtx.arc(p.x, p.y, Math.max(0.1, p.r), 0, Math.PI*2);
+      pCtx.fillStyle = 'rgba(245,214,126,' + (p.a * flicker) + ')';
+      pCtx.fill();
+    }
+  }
+
+  // === Main loop ===
+  var time = 0;
+  function loop(){
+    requestAnimationFrame(loop);
+    time += 0.016;
+
+    if (started) {
+      smoothProg += (scrollProg - smoothProg) * 0.085;
+      var p = smoothProg;
+
+      // Drive HTML5 Video via currentTime
+      if (videoReady && videoDuration > 0) {
+        var targetTime = p * videoDuration;
+        // Only seek if we aren't already seeking, and the threshold is met
+        if (!isSeeking && Math.abs(video.currentTime - targetTime) > CONFIG.SEEK_THRESHOLD) {
+          isSeeking = true;
+          if (typeof video.fastSeek === 'function') {
+            video.fastSeek(targetTime);
+          } else {
+            video.currentTime = targetTime;
+          }
+        }
+      }
+
+      updateUI(p);
+    }
+
+    renderParticles(time);
+  }
+  loop();
+
+  // === Keyboard navigation ===
+  document.addEventListener('keydown', function(e){
+    if (!started) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startBtn.click();
+      }
+      return;
+    }
+    var cur = Math.round(window.scrollY / window.innerHeight);
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      e.preventDefault();
+      window.scrollTo({top: Math.min(SECTION_COUNT-1, cur+1) * window.innerHeight, behavior:'smooth'});
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      window.scrollTo({top: Math.max(0, cur-1) * window.innerHeight, behavior:'smooth'});
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      window.scrollTo({top:0, behavior:'smooth'});
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      window.scrollTo({top:document.documentElement.scrollHeight, behavior:'smooth'});
+    }
+  });
+  </script>
+</body>
+</html>
